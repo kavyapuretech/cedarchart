@@ -139,31 +139,29 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
             }
             window.chart = chart;
 
-            var changed_Graphic_Chart_Layer = new GraphicsLayer({
-                id:  "changed_graphiclayer"
-            });
-            map.addLayer(changed_Graphic_Chart_Layer);
-            var changedQuickSelectSymbol =  new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_DIAMOND, 15).setColor(new Color([175,14,105, 0.5]));
-            changedQuickSelectSymbol.setSize(10);
-            changedQuickSelectSymbol = new SimpleMarkerSymbol({
-                "color": [204, 51, 255],
-                "size": 12,
-                "angle": -30,
-                "fill-opacity":0.5,
-                "xoffset": 0,
-                "yoffset": 0,
-                "type": "esriSMS",
-                "style": "esriSMSCircle",
-
-                "outline": {
-                    "color": [153, 0, 204, 255],
-                    "width": 1,
-                    "type": "esriSLS",
-                    "style": "esriSLSSolid"
-                }
-            });
-            // on(dom.byId("selectelementid"), "change", function (evt){
-            //     var testval = evt.graphic;
+            // var changed_Graphic_Chart_Layer = new GraphicsLayer({
+            //     id:  "changed_graphic_layer"
+            // });
+            // map.addLayer(changed_Graphic_Chart_Layer);
+            // var changedQuickSelectSymbol =  new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_DIAMOND, 15).setColor(new Color([175,14,105, 0.5]));
+            // changedQuickSelectSymbol.setSize(10);
+            // changedQuickSelectSymbol = new SimpleMarkerSymbol({
+            //     "color": [204, 51, 255],
+            //     "size": 12,
+            //     "angle": -30,
+            //     "fill-opacity":0.5,
+            //     "xoffset": 0,
+            //     "yoffset": 0,
+            //     "type": "esriSMS",
+            //     "style": "esriSMSCircle",
+            //
+            //     "outline": {
+            //         "color": [153, 0, 204, 255],
+            //         "width": 1,
+            //         "type": "esriSLS",
+            //         "style": "esriSLSSolid"
+            //     }
+            // });
 
             var datelist_query_Task = new QueryTask('https://solutions.puretechltd.com/wwsarcgis/rest/services/Tempe/TempeQuery/FeatureServer/5');
             var datevisitedfield="VISIT_DATE_WEB";
@@ -173,14 +171,11 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
             var myDateTime = today.toISOString().substr(0,10);
             var query_val = new esri.tasks.Query();
             query_val.returnGeometry = true;
-            // query_val.where = "VISIT_DATE_WEB <" +myDateTime;
-            query_val.where = "1=1";
+            query_val.where = "VISIT_DATE_WEB < date '"+myDateTime+"'";
+            // query_val.where = "1=1";
             query_val.outFields = ["*"];
             datelist_query_Task.execute(query_val, displayResults);
 
-            // function changedcheckmarkCounts() {
-            //     datelist_query_Task.execute(query_val, displayResults);
-            // }
             function displayResults(result) {
 
                 var feature =  result.features;
@@ -188,23 +183,23 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
                     var featur = feature[i];
                     datesarray.push(featur.attributes[datevisitedfield]);
 
-                    var changedgraphic = feature[i];
-                    changedgraphic.setSymbol(changedQuickSelectSymbol);
-                    // map.graphics.add(graphic);
-                    changed_Graphic_Chart_Layer.add(changedgraphic);
+                    // var changedgraphic = feature[i];
+                    // changedgraphic.setSymbol(changedQuickSelectSymbol);
+                    // // map.graphics.add(graphic);
+                    // changed_Graphic_Chart_Layer.add(changedgraphic);
                 }
                 // unique values from array
                 var unique;
                 var dateformatarray = [];
 
-                unique = datesarray.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+                unique = datesarray.filter(function(item, j, ar){ return ar.indexOf(item) === j; });
 
                 for(var j = 0 ;  j < unique.length ; j ++){
                     dateformatarray.push(timeConverter(unique[j]));
                 }
                 // dropdown values
                 for(var k = 0 ;  k < unique.length ; k ++){
-                    $("#selectelementid").append('<option value="' + unique[k] + '" >' + dateformatarray[k] + '</option>');
+                    $("#selectelementid").append('<option value="' + unique[k] + '" where="'+ unique[k] + '" >' + dateformatarray[k] + '</option>');
                 }
             }
             // });
@@ -215,11 +210,21 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
             // function executeQuerychartupdate(d){
             //     var vistdate ="VISIT_DATE_WEB";
             //     var selecteddate = dom.byId("selectelementid").value;
-            //    dataset.query.where=""+vistdate+"  = date '"+selecteddate+"'";
+            //     dataset.query.where=""+vistdate+"  = date '"+selecteddate+"'";
             //     chart.update();
             //     alert(selecteddate);
             // }
-
+            // function newgraphics(Set){
+            //     map.graphics.clear();
+            //     var newresultFeatures = Set.features;
+            //     for (var i = 0,
+            //              il = newresultFeatures.length; i < il; i++) {
+            //         var newgraphic = newresultFeatures[i];
+            //         newgraphic.setSymbol(changedQuickSelectSymbol);
+            //         // map.graphics.add(graphic);
+            //         changed_Graphic_Chart_Layer.add(newgraphic);
+            //     }
+            // }
             function executeQuerychartupdate(evt){
                 var today=new Date();
                 // var myDateTime = today.toISOString().substr(0,10);
@@ -228,7 +233,7 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
                 var bar_chart =new Cedar({
                     "type": "bar"
                 });
-                    //create the dataset w/ mappings
+                //create the dataset w/ mappings
                 var changeddataset = {
                     "url":"https://solutions.puretechltd.com/wwsarcgis/rest/services/Tempe/TempeQuery/FeatureServer/5",
 
@@ -237,8 +242,7 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
                         "outStatistics": [{
                             "statisticType": "count",
                             "onStatisticField": "OBJECTID",
-                            "outStatisticFieldName": "OBJECTID",
-                            "where": "VISIT_DATE_WEB = date '"+selecteddate+"'"
+                            "outStatisticFieldName": "OBJECTID"
                         }]
                     },
                     "mappings":{
@@ -278,7 +282,7 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
                 bar_chart.on('mouseover', newonChartHover);
                 bar_chart.on('mouseout', function(evt) {
                     // map.graphics.clear();
-                    changed_Graphic_Chart_Layer.clear();
+                    Graphic_Chart_Layer.clear();
                 });
 
 //                 var feature;
@@ -292,11 +296,11 @@ define("cedar_script",[ "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleL
                     var newselected = d[changeddataset.mappings.x.field];
                     query.where = changeddataset.mappings.x.field + " = " + "'" +newselected+ "'";
 //
-//                     changedcheckmarkCounts();
+                    checkmarkCounts();
                 }
 //                 window.chart = bar_chart;
 
-                }
+            }
             function timeConverter(UNIX_timestamp) {
                 var a = new Date(UNIX_timestamp);
                 var months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
